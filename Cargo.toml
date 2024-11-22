@@ -1,0 +1,12 @@
+[package]
+name = "sqlite-repr"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "ui"
+]
+
+resolver = "2"
+[dependencies]
