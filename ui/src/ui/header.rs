@@ -33,7 +33,7 @@ impl Parts for DBHeader {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Field {
     pub desc: &'static str,
     pub offset: usize,
@@ -42,22 +42,24 @@ pub struct Field {
 }
 
 impl Field {
-    /// value转换成16进制字符串
+    /// 将Filed的value转换成16进制字符串
     pub fn to_hex(&self) -> String {
-        match &self.value {
-            Value::U8(v) => format!("{:02X}", v),
-            Value::U16(v) => format!("{:04X}", v),
-            Value::Text(v) => v
-                .as_bytes()
+        let pretty_hex = |bytes: &[u8]| -> String {
+            bytes
                 .iter()
                 .map(|b| format!("{:02X}", b))
-                .collect::<Vec<_>>()
-                .join(" "),
+                .collect::<Vec<String>>()
+                .join(" ")
+        };
+        match &self.value {
+            Value::U8(v) => pretty_hex(&v.to_be_bytes()),
+            Value::U16(v) => pretty_hex(&v.to_be_bytes()),
+            Value::Text(v) => pretty_hex(v),
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     U8(u8),
     U16(u16),
@@ -65,11 +67,11 @@ pub enum Value {
 }
 
 impl std::fmt::Display for Value {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Results {
         match self {
             Self::U8(v) => write!(f, "{v}"),
             Self::U16(v) => write!(f, "{v}"),
-            Self::Text(v) => write!(f, "{v}"),
+            Self::Text(v) => write!(f, "{:?}", v),
         }
     }
 }

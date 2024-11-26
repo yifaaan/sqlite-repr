@@ -17,7 +17,7 @@ impl TryFrom<&[u8; 100]> for DBHeader {
     fn try_from(value: &[u8; 100]) -> Result<Self, Self::Error> {
         Ok(Self::new(
             // header
-            std::str::from_utf8(&slc!(value, 0, 15))?.to_string(),
+            std::str::from_utf8(&slc!(value, 0, 16))?.to_string(),
             slc!(value, 16, 2, u16),
         ))
     }
