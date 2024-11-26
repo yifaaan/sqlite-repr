@@ -54,7 +54,7 @@ impl Field {
         match &self.value {
             Value::U8(v) => pretty_hex(&v.to_be_bytes()),
             Value::U16(v) => pretty_hex(&v.to_be_bytes()),
-            Value::Text(v) => pretty_hex(v),
+            Value::Text(v) => pretty_hex(v.as_bytes()),
         }
     }
 }
@@ -67,7 +67,7 @@ pub enum Value {
 }
 
 impl std::fmt::Display for Value {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Results {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::U8(v) => write!(f, "{v}"),
             Self::U16(v) => write!(f, "{v}"),

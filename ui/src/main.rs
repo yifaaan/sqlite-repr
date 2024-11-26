@@ -46,6 +46,8 @@ pub enum Format {
     Hybrid,
     /// 16进制
     Hex,
+    /// text
+    Text,
 }
 
 impl AppState {
@@ -243,7 +245,7 @@ pub fn Description() -> Element {
                                             "Offset"
                                         }
                                         td {
-                                            "{field.offset}"
+                                            "{field.offset} byte(s)"
                                         }
                                     }
                                     tr {
@@ -251,7 +253,7 @@ pub fn Description() -> Element {
                                             "Size"
                                         }
                                         td {
-                                            "{field.size}"
+                                            "{field.size} byte(s)"
                                         }
                                     }
                                     tr {
@@ -309,18 +311,61 @@ pub fn Visual() -> Element {
                 },
                 "Hex"
             }
+
+            div {
+                class: "btn btn-xs btn-ghost tracking-tighter font-bold",
+                class: if formatting() == Format::Text {"btn-active"},
+                onclick: move |_| {
+                    *formatting.write() = Format::Text
+                },
+                "Text"
+            }
         }
 
         div {
-            class: "flex flex-wrap join p-4",
+            class: "flex flex-wrap join p-4 text-xs",
             for field in fields {
                 div {
-                    class: "btn btn-xs btn-outline btn-secondary join-item",
+                    class: "p-1 outline outline-1 outline-secondary bg-primary join-item hover:bg-secondary",
                     // 选中时，显示filed的Description
                     onmouseover: move |_| {
                         *selected_field.write() = Some(field.clone());
                     },
-                    if formatting() == Format::Hybrid {"{field.value}"} else {"{field.to_hex()}"}
+                    FormattedValue {field: field.clone()}
+                }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn FormattedValue(field: Field) -> Element {
+    let formatting = use_context::<AppState>().format;
+    match formatting() {
+        Format::Hybrid => {
+            rsx! {
+                div {
+                    class: "divide-y divide-secondary",
+                    div {
+                        "{field.value}"
+                    }
+                    div {
+                        "{field.to_hex()}"
+                    }
+                }
+            }
+        }
+        Format::Hex => {
+            rsx! {
+                div {
+                    "{field.to_hex()}"
+                }
+            }
+        }
+        Format::Text => {
+            rsx! {
+                div {
+                    "{field.value}"
                 }
             }
         }
