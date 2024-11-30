@@ -28,6 +28,30 @@ impl Parts for DBHeader {
                 16,
                 2,
                 Value::U16(self.page_size),
+            ),
+            Field::new(
+                "write version: 1 for legacy, 2 for WAL",
+                18,
+                1,
+                Value::U8(self.write_version),
+            ),
+            Field::new(
+                "read version: 1 for legacy, 2 for WAL",
+                19,
+                1,
+                Value::U8(self.read_version),
+            ),
+            Field::new(
+                "每页尾部保留的字节数，通常为0， 如果设置为非0，则这些字节不会用于存储数据",
+                20,
+                1,
+                Value::U8(self.reserved_page_size)
+            ),
+            Field::new(
+                "定义 B-Tree 叶节点中嵌入负载数据的最大比例，must be 64",
+                21,
+                1,
+                Value::U8(self.max_embeded_payload_fraction)
             )
         ]
     }
@@ -54,6 +78,7 @@ impl Field {
         match &self.value {
             Value::U8(v) => pretty_hex(&v.to_be_bytes()),
             Value::U16(v) => pretty_hex(&v.to_be_bytes()),
+            Value::U32(v) => pretty_hex(&v.to_be_bytes()),
             Value::Text(v) => pretty_hex(v.as_bytes()),
         }
     }
@@ -63,6 +88,7 @@ impl Field {
 pub enum Value {
     U8(u8),
     U16(u16),
+    U32(u32),
     Text(String),
 }
 
@@ -71,6 +97,7 @@ impl std::fmt::Display for Value {
         match self {
             Self::U8(v) => write!(f, "{v}"),
             Self::U16(v) => write!(f, "{v}"),
+            Self::U32(v) => write!(f, "{v}"),
             Self::Text(v) => write!(f, "{:?}", v),
         }
     }
