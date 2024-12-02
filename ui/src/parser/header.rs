@@ -20,7 +20,7 @@ pub struct DBHeader {
     /// 每页尾部保留的字节数，通常为 0。如果设置为非零值，则这些字节不会用于存储实际数据。
     /// offset: 20, size: 1
     pub reserved_page_size: u8,
-    /// 定义 B-Tree 页节点中嵌入负载数据的最大比例
+    /// 定义 B-Tree 叶节点中嵌入负载数据的最大比例
     /// must be 64
     /// offset: 21, size: 1
     pub max_embeded_payload_fraction: u8,
@@ -97,11 +97,6 @@ impl TryFrom<&[u8; 100]> for DBHeader {
     type Error = anyhow::Error;
 
     fn try_from(value: &[u8; 100]) -> Result<Self, Self::Error> {
-        let slice_to_u8_20 = |slice: &[u8]| -> [u8; 20] {
-            let mut array = [0; 20]; // Create an array with 20 elements initialized to 0
-            array.copy_from_slice(slice); // Copy the slice into the array
-            array
-        };
         Ok(Self::new(
             // header
             std::str::from_utf8(&slc!(value, 0, 16))?.to_string(),
@@ -124,7 +119,7 @@ impl TryFrom<&[u8; 100]> for DBHeader {
             slc!(value, 60, 4, u32),
             slc!(value, 64, 4, u32),
             slc!(value, 68, 4, u32),
-            slice_to_u8_20(&slc!(value, 72, 20)),
+            &value[72..92],
             slc!(value, 92, 4, u32),
             slc!(value, 96, 4, u32),
         ))
@@ -153,10 +148,12 @@ impl DBHeader {
         user_version: u32,
         is_incremental_vacuum_mode: u32,
         application_id: u32,
-        expansion_reserved: [u8; 20],
+        expansion_reserved_slice: &[u8],
         version_valid_for: u32,
         sqlite_version_number: u32,
     ) -> Self {
+        let mut expansion_reserved = [0u8; 20];
+        expansion_reserved.copy_from_slice(expansion_reserved_slice);
         Self {
             header,
             page_size,
